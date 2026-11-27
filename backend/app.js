@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const courseRoutes = require('./routes/courseRoutes');
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const { sendError } = require('./utils/apiResponse');
 
 const app = express();
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 // Mount Routes (Auth routes will be mounted by teammate at /api/auth)
 app.use('/api/courses', courseRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {

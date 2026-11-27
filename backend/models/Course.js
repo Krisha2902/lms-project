@@ -80,8 +80,7 @@ const courseSchema = new mongoose.Schema(
         slug: {
             type: String,
             unique: true,
-            lowercase: true,
-            index: true
+            lowercase: true
         },
         subtitle: {
             type: String,

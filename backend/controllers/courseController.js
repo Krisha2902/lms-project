@@ -94,9 +94,56 @@ const getInstructorCourses = async (req, res) => {
     }
 };
 
+// Get protected lesson content (Video URL / Text) - Protected by checkEnrollment middleware
+const getLessonContent = async (req, res) => {
+    try {
+        const { courseId, lessonId } = req.params;
+
+        const course = await Course.findById(courseId).select('title chapters').lean();
+        if (!course) {
+            return sendError(res, 404, 'Course not found');
+        }
+
+        let targetLesson = null;
+        let chapterTitle = '';
+
+        for (const chapter of course.chapters) {
+            const found = chapter.lessons.find((l) => l.lessonId === lessonId);
+            if (found) {
+                targetLesson = found;
+                chapterTitle = chapter.title;
+                break;
+            }
+        }
+
+        if (!targetLesson) {
+            return sendError(res, 404, 'Lesson not found in this course');
+        }
+
+        return sendSuccess(res, 200, 'Lesson content accessed securely', {
+            courseId,
+            courseTitle: course.title,
+            chapterTitle,
+            lesson: {
+                lessonId: targetLesson.lessonId,
+                title: targetLesson.title,
+                contentType: targetLesson.contentType,
+                videoUrl: targetLesson.videoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4',
+                textContent: targetLesson.textContent,
+                durationMinutes: targetLesson.durationMinutes,
+                isFreePreview: targetLesson.isFreePreview
+            },
+            accessGrantedVia: req.isFreePreview ? 'free_preview' : 'active_enrollment'
+        });
+    } catch (error) {
+        return sendError(res, 500, 'Failed to fetch lesson content', error);
+    }
+};
+
 module.exports = {
     getAllPublishedCourses,
     getCourseBySlug,
     createCourse,
-    getInstructorCourses
+    getInstructorCourses,
+    getLessonContent
 };
