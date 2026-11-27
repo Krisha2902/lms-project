@@ -38,12 +38,18 @@ Aapke project mein ye foundational cheezein pehle se setup hain:
 - [x] Standalone Course Controller (`controllers/courseController.js`) and routes (`routes/courseRoutes.js`) mounted at `/api/courses`.
 - [x] Tested and verified: course creation and browsing operate completely standalone without conflicting with teammate's auth work.
 
-#### [ ] Day 3: Enrollment Engine & Secure Access Gate
-- [ ] `models/Enrollment.js` schema banana: `studentId`, `courseId`, `status`, `enrolledAt`.
-- [ ] Unique compound index `{ studentId: 1, courseId: 1 }` create karna (duplicate enrollment prevent karne ke liye).
-- [ ] Endpoints implement karna: `POST /api/enrollments/enroll/:courseId` aur `GET /api/enrollments/my-courses`.
-- [ ] `checkEnrollment` middleware banana: verify karega ki student course mein enrolled hai ya nahi course content access karne se pehle.
-- [ ] *Verification*: Bina enroll kiye locked lesson access karke 403 Forbidden check karna.
+#### [x] Day 3: Enrollment Engine & Secure Access Gate (COMPLETED)
+- [x] `models/Enrollment.js` schema implemented (`studentId`, `courseId`, `status: ['active', 'completed', 'dropped']`, `enrolledAt`, `lastAccessedAt`).
+- [x] Compound unique index `{ studentId: 1, courseId: 1 }` created to enforce State Machine Integrity and prevent duplicate enrollments at DB level.
+- [x] Query index `{ studentId: 1, status: 1 }` configured for ultra-fast "my-courses" dashboard queries (< 200ms latency SLA).
+- [x] Enrollment controller (`controllers/enrollmentController.js`) and routes (`routes/enrollmentRoutes.js`) mounted at `/api/enrollments`:
+  - `POST /api/enrollments/enroll/:courseId` (idempotent course enrollment)
+  - `GET /api/enrollments/my-courses` (fetch student's enrolled courses with course details)
+  - `GET /api/enrollments/check/:courseId` (real-time enrollment verification)
+- [x] `middleware/checkEnrollment.js` access gatekeeper implemented:
+  - Grants access if student has active enrollment.
+  - Grants access if lesson is marked `isFreePreview: true`.
+  - Blocks unauthorized / non-enrolled students with `403 Forbidden` (`GET /api/courses/:courseId/lessons/:lessonId/content`).
 
 #### [ ] Day 4: Phase 1 Integration Tests & API Contracts
 - [ ] Auth, Course creation, aur Enrollment flows ke liye integration tests write karna.

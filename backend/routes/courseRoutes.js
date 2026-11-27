@@ -3,8 +3,10 @@ const {
     getAllPublishedCourses,
     getCourseBySlug,
     createCourse,
-    getInstructorCourses
+    getInstructorCourses,
+    getLessonContent
 } = require('../controllers/courseController');
+const checkEnrollment = require('../middleware/checkEnrollment');
 
 const router = express.Router();
 
@@ -12,7 +14,10 @@ const router = express.Router();
 router.get('/', getAllPublishedCourses);
 router.get('/:slug', getCourseBySlug);
 
-// Instructor course management routes (will plug into teammate's auth middleware once ready)
+// Secure Lesson Asset Delivery (Protected by checkEnrollment Access Gate)
+router.get('/:courseId/lessons/:lessonId/content', checkEnrollment, getLessonContent);
+
+// Instructor course management routes
 router.post('/', createCourse);
 router.get('/instructor/my-courses', getInstructorCourses);
 
