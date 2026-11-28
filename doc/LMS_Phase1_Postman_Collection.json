@@ -1,0 +1,168 @@
+{
+  "info": {
+    "name": "Axlero LMS - Phase 1 API Collection",
+    "description": "API Contracts and Endpoints for Courses, Curriculum, and Enrollment Engine (SLA < 200ms latency).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "sampleStudentId",
+      "value": "674500000000000000000001",
+      "type": "string"
+    },
+    {
+      "key": "sampleCourseId",
+      "value": "674500000000000000000002",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        },
+        "description": "Check if API server is running."
+      }
+    },
+    {
+      "name": "Courses API",
+      "item": [
+        {
+          "name": "Get All Published Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses?category=Technology&level=Beginner",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"],
+              "query": [
+                { "key": "category", "value": "Technology", "disabled": true },
+                { "key": "level", "value": "Beginner", "disabled": true }
+              ]
+            },
+            "description": "Public catalog fetch with projection pruning for sub-60ms latency."
+          }
+        },
+        {
+          "name": "Get Course By Slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/modern-frontend-foundations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "modern-frontend-foundations"]
+            },
+            "description": "Retrieve full syllabus and chapters of a course by its unique slug."
+          }
+        },
+        {
+          "name": "Create Course (Instructor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Modern Frontend Foundations\",\n  \"subtitle\": \"Master React 19, Tailwind CSS 4, and JavaScript ESNext\",\n  \"description\": \"Comprehensive hands-on course covering frontend fundamentals with real-world projects.\",\n  \"category\": \"Technology\",\n  \"level\": \"Beginner\",\n  \"price\": 49,\n  \"thumbnailUrl\": \"https://images.unsplash.com/photo-1633356122544-f134324a6cee\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"]
+            },
+            "description": "Create a new course draft. Assigns auto-slug and instructor."
+          }
+        },
+        {
+          "name": "Get Protected Lesson Content",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-student-id", "value": "{{sampleStudentId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{sampleCourseId}}/lessons/les_101/content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{sampleCourseId}}", "lessons", "les_101", "content"]
+            },
+            "description": "Gated lesson asset route. Returns videoUrl & full text if student is enrolled or if lesson isFreePreview: true. Blocks with 403 Forbidden otherwise."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enrollments API",
+      "item": [
+        {
+          "name": "Enroll in Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{sampleStudentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/enrollments/enroll/{{sampleCourseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "enrollments", "enroll", "{{sampleCourseId}}"]
+            },
+            "description": "Enroll a student in a course. Idempotent: enforces compound unique index { studentId: 1, courseId: 1 } to prevent duplicates."
+          }
+        },
+        {
+          "name": "Get My Enrolled Courses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-student-id", "value": "{{sampleStudentId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enrollments/my-courses?studentId={{sampleStudentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "enrollments", "my-courses"],
+              "query": [
+                { "key": "studentId", "value": "{{sampleStudentId}}" }
+              ]
+            },
+            "description": "Returns all active enrolled courses for the student dashboard (< 50ms latency)."
+          }
+        },
+        {
+          "name": "Check Enrollment Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-student-id", "value": "{{sampleStudentId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enrollments/check/{{sampleCourseId}}?studentId={{sampleStudentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "enrollments", "check", "{{sampleCourseId}}"],
+              "query": [
+                { "key": "studentId", "value": "{{sampleStudentId}}" }
+              ]
+            },
+            "description": "Returns { isEnrolled: true/false, status: 'active' | null } to toggle frontend buttons."
+          }
+        }
+      ]
+    }
+  ]
+}

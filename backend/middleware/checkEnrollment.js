@@ -35,10 +35,11 @@ const checkEnrollment = async (req, res, next) => {
             return next();
         }
 
-        // Identify student ID from auth token, body, or custom dev header
+        // Identify student ID from auth token, body, query, or custom dev header
         const studentId =
             (req.user && req.user._id) ||
-            req.body.studentId ||
+            (req.body && req.body.studentId) ||
+            (req.query && req.query.studentId) ||
             req.headers['x-student-id'];
 
         if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
