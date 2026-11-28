@@ -97,6 +97,11 @@ const getMyEnrolledCourses = async (req, res) => {
 const checkEnrollmentStatus = async (req, res) => {
     try {
         const { courseId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(courseId)) {
+            return sendError(res, 400, 'Invalid course ID format');
+        }
+
         const studentId =
             (req.user && req.user._id) ||
             req.query.studentId ||
